@@ -17,6 +17,7 @@ Minim       minim;
 AudioOutput out;
 // Need a unit generator for the oscillator
 Oscil       wave;
+boolean     wavePatch = true;
 // Need a sound file reader
 Sampler     snd;
 
@@ -55,7 +56,8 @@ void setup()
   moog.type = MoogFilter.Type.HP;
   
   // Patch the Oscil to the output so we can hear it
-  wave.patch(flange).patch(moog).patch( out );
+  wave.patch(flange).patch(moog).patch(out);
+  snd.patch(out);
 }
 
 // Use draw to display the waveform in green & the output in white
@@ -132,11 +134,22 @@ void keyPressed()
     case 'f':
       moog.type = MoogFilter.Type.BP;
       break;
+      
+    case 'i':
+      if(wavePatch)
+      {
+        moog.unpatch(out);
+      }
+      else
+      {
+        moog.patch(out);
+      }
+      wavePatch = !wavePatch;
+      break;
     
     case 'u':
-      wave.unpatch( out );
-      snd.patch( out );
       snd.trigger();
+      break;
      
     default: break; 
   }
