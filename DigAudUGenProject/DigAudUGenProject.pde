@@ -140,9 +140,9 @@ void setup()
   
   for (int i = 0; i < 16; i++)
   {
-    buttons.add( new Rect(10+i*24, 50, snareRow, i ) );
-    buttons.add( new Rect(10+i*24, 100, hatRow, i ) );
-    buttons.add( new Rect(10+i*24, 150, kickRow, i ) );
+    buttons.add( new Rect(10+i*31, 50, snareRow, i ) );
+    buttons.add( new Rect(10+i*31, 100, hatRow, i ) );
+    buttons.add( new Rect(10+i*31, 150, kickRow, i ) );
   }
   
   beat = 0;
@@ -192,7 +192,7 @@ void draw()
   }
     
   // beat marker    
-  rect(10+beat*24, 35, 14, 9);
+  rect(10+beat*31, 35, 14, 9);
   
   
 }
