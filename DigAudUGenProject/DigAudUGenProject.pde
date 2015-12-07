@@ -18,6 +18,7 @@ AudioOutput out;
 // Need a unit generator for the oscillator
 Oscil       wave;
 boolean     wavePatch = true;
+boolean     adjustingOscil = true;
 // Need a sound file reader
 Sampler     snd;
 Sampler     hat;
@@ -103,7 +104,7 @@ class Rect
 void setup()
 {
   // Width is the number of samples in the sample table
-  size(512, 200);
+  size(512, 600);
   
   // Magic words to create an object for the audio system
   minim = new Minim(this);
@@ -122,17 +123,14 @@ void setup()
   
   //Set our wave's amplitude and frequency
   wave.setAmplitude( 0.8 );
-  wave.setFrequency( 500 );
-  
-  //Set up our flanger
-  flange = new Flanger( 1, 7.0f, 1, 0.7f, 0.2f, 0.2f);
+  wave.setFrequency( 200 );
   
   //Set up our moog filter and give it a default type
   moog = new MoogFilter( 1200, 0.5f );
   moog.type = MoogFilter.Type.HP;
   
   // Patch the Oscil to the output so we can hear it
-  wave.patch(flange).patch(moog).patch(out);
+  wave.patch(moog).patch(out);
   snd.patch(out);
   snare.patch(out);
   hat.patch(out);
@@ -140,9 +138,9 @@ void setup()
   
   for (int i = 0; i < 16; i++)
   {
-    buttons.add( new Rect(10+i*31, 50, snareRow, i ) );
-    buttons.add( new Rect(10+i*31, 100, hatRow, i ) );
-    buttons.add( new Rect(10+i*31, 150, kickRow, i ) );
+    buttons.add( new Rect(10+i*31, 450, snareRow, i ) );
+    buttons.add( new Rect(10+i*31, 500, hatRow, i ) );
+    buttons.add( new Rect(10+i*31, 550, kickRow, i ) );
   }
   
   beat = 0;
@@ -156,14 +154,25 @@ void setup()
 void draw()
 {
   background(0);
+  
+  stroke( 255, 255, 255 );
+  strokeWeight(1);
+  line(0, 200, width, 200);
+  line(0, 430, width, 430);
+  
+  if(!adjustingOscil)
+  {
+    fill( 140, 0, 50);
+    rect(0, 0, width, 200); 
+  }
 
   // Draw the waveform shape we are using in the oscillator
   stroke( 0, 255, 0 );  // Green
   strokeWeight(4);      // Big pixels
   for( int i = 0; i < width-1; ++i )
   {
-    point( i, height/2.0 -
-               height*0.49*wave.getWaveform().value((float)i/width) );
+    point( i, 200/2.0 -
+               200*0.49*wave.getWaveform().value((float)i/width) );
   }
 
   // Draw the actual waveform in real time
@@ -172,42 +181,36 @@ void draw()
   // Draw the waveform of the output in stereo
   for(int i = 0; i < out.bufferSize() - 1; i++)
   {
-    line( i,  50-out.left.get(i)*50,  i+1,  50-out.left.get(i+1)*50 );
-    line( i, 150-out.right.get(i)*50, i+1, 150-out.right.get(i+1)*50 );
+    line( i,  50-out.left.get(i)*30,  i+1,  50-out.left.get(i+1)*30 );
+    line( i, 150-out.right.get(i)*30, i+1, 150-out.right.get(i+1)*30 );
   }
   
   for(int i = 0; i < buttons.size(); ++i)
   {
     buttons.get(i).draw();
   }
-  
-  stroke(128);
-  if ( beat % 4 == 0 )
-  {
-    fill(200, 0, 0);
-  }
-  else
-  {
-    fill(0, 200, 0);
-  }
     
-  // beat marker    
-  rect(10+beat*31, 35, 14, 9);
+  // beat marker
+  fill(0, 200, 0);
+  rect(10+beat*31, 435, 18, 9);
   
   
 }
 
 void mouseMoved()
 {
-  // Maps mouseY in range from 0 to height to the range 0.9 to 0 (0.0 to 0.9)
-  float feedback = map( mouseY, 0, height, 0.7f, 0 );
-  //Set the falnger's feedback
-  flange.feedback.setLastValue( feedback );
-  
-  // Maps mouseX in range from 0 to width to the range 0.9 to 0 (0.0 to 0.9)
-  float resonance = map( mouseX, 0, width-1, 0.9, 0 );
-  //Set the moog filter's resonance
-  moog.resonance.setLastValue(resonance);
+  if(mouseY < 200 && adjustingOscil)
+  {
+    // Maps mouseX in range from 0 to width to the range 100 to 900
+    float frequency = map( mouseX, 0, width-1, 200, 900 );
+    //Set the oscilator's feedback
+    wave.setFrequency(frequency);
+    
+    // Maps mouseY in range from 0 to 200 (the height of the oscilator box) to the range 0.9 to 0 (0.0 to 0.9)
+    float resonance = map( mouseY, 0, 200, 0.9, 0 );
+    //Set the moog filter's resonance
+    moog.resonance.setLastValue(resonance);
+  }
 }
 
 void keyPressed()
@@ -269,9 +272,27 @@ void keyPressed()
 
 void mousePressed()
 {
-  for(int i = 0; i < buttons.size(); ++i)
+  if(mouseY > 430)
   {
-    buttons.get(i).mousePressed();
+    for(int i = 0; i < buttons.size(); ++i)
+    {
+      buttons.get(i).mousePressed();
+    }
+  }
+  if(mouseY < 200)
+  {
+    adjustingOscil = !adjustingOscil; 
+    
+    //Capture the mouse position one more time so that when you toggle the oscilator back on, it doesn't stick on the old frequency/resonance until you move the mouse
+    // Maps mouseX in range from 0 to width to the range 100 to 900
+    float frequency = map( mouseX, 0, width-1, 200, 900 );
+    //Set the oscilator's feedback
+    wave.setFrequency(frequency);
+    
+    // Maps mouseY in range from 0 to 200 (the height of the oscilator box) to the range 0.9 to 0 (0.0 to 0.9)
+    float resonance = map( mouseY, 0, 200, 0.9, 0 );
+    //Set the moog filter's resonance
+    moog.resonance.setLastValue(resonance);
   }
 }
 
