@@ -113,7 +113,7 @@ void setup()
   out = minim.getLineOut();
   
   // Sound file samplers, the 4 represents the number of concurrent "voices" that can exist for this sound
-  snd = new Sampler ("Rimshot.wav", 4, minim);
+  snd = new Sampler ( "CS.wav", 4, minim );
   snare = new Sampler( "SD.wav", 4, minim );
   hat   = new Sampler( "CHH.wav", 4, minim );
   kick  = new Sampler( "BD.wav", 4, minim );
@@ -159,6 +159,14 @@ void draw()
   strokeWeight(1);
   line(0, 200, width, 200);
   line(0, 430, width, 430);
+  
+  textSize(15);
+  fill(255, 255, 255);
+  text("Controls and useful tips:", 10, 220);
+  textSize(12);
+  text("- clicking in the oscilator region above will enable/disable chainging the \noscilator's pitch and the frequency of the moog filter it uses.", 15, 240);
+  text("- use the beat boxes below to add snare, kick drum and hi-hat notes \nto the current audio output", 15, 290);
+  text("U: trigger a crash cymbal \nI: disable the oscilator \nQ, W, E, R, A: change the wave type of the oscilator \nS, D, F: Change the moog filter's pass type", 15, 340);
   
   if(!adjustingOscil)
   {
